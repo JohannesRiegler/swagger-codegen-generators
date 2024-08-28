@@ -15,9 +15,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TreeSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import static io.swagger.codegen.v3.CodegenConstants.IS_CONTAINER_EXT_NAME;
 import static io.swagger.codegen.v3.generators.handlebars.ExtensionHelper.getBooleanValue;
 
 public class TypeScriptAxiosClientCodegen extends AbstractTypeScriptClientCodegen {
@@ -190,8 +190,8 @@ public class TypeScriptAxiosClientCodegen extends AbstractTypeScriptClientCodege
             // Deduce the model file name in kebab case
             cm.classFilename = cm.classname.replaceAll("([a-z0-9])([A-Z])", "$1-$2").toLowerCase(Locale.ROOT);
 
-            //processed enum names
-            cm.imports = new TreeSet<String>(cm.imports);
+            cm.imports = getImportsWithoutCurrentClass(cm);
+            // process enum names
             // name enum with model name, e.g. StatusEnum => PetStatusEnum
             for (CodegenProperty var : cm.vars) {
                 if (getBooleanValue(var, CodegenConstants.IS_ENUM_EXT_NAME)) {
@@ -218,6 +218,10 @@ public class TypeScriptAxiosClientCodegen extends AbstractTypeScriptClientCodege
             m.put("filename", javaImport.replaceAll("([a-z0-9])([A-Z])", "$1-$2").toLowerCase(Locale.ROOT));
         }
         return objs;
+    }
+
+    private static Set<String> getImportsWithoutCurrentClass(CodegenModel cm) {
+        return cm.imports.stream().filter(importClass -> !importClass.equals(cm.classname)).collect(Collectors.toSet());
     }
 
     /**
